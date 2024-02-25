@@ -8,11 +8,11 @@ import {
   View,
   Switch,
   Button,
-  Alert
+  Alert,
 } from 'react-native';
 
-import BackgroundFetch from "react-native-background-fetch";
-import Event from "./src/Event";
+import BackgroundFetch from 'react-native-background-fetch';
+import Event from './src/Event';
 
 const Colors = {
   gold: '#fedd1e',
@@ -20,68 +20,72 @@ const Colors = {
   white: '#fff',
   lightGrey: '#ccc',
   blue: '#337AB7',
-}
+};
 
 /// Util class for handling fetch-event peristence in AsyncStorage.
 
-
 export default function App() {
-
   const [enabled, setEnabled] = useState(false);
   const [status, setStatus] = useState(-1);
   const [events, setEvents] = useState<Event[]>([]);
 
   useEffect(() => {
-    initBackgroundFetch()
+    initBackgroundFetch();
     loadEvents();
   }, []);
 
   /// Configure BackgroundFetch.
   ///
   const initBackgroundFetch = async () => {
-    const status:number = await BackgroundFetch.configure({
-      minimumFetchInterval: 15,      // <-- minutes (15 is minimum allowed)
-      stopOnTerminate: false,
-      enableHeadless: true,
-      startOnBoot: true,
-      // Android options
-      forceAlarmManager: false,      // <-- Set true to bypass JobScheduler.
-      requiredNetworkType: BackgroundFetch.NETWORK_TYPE_NONE, // Default
-      requiresCharging: false,       // Default
-      requiresDeviceIdle: false,     // Default
-      requiresBatteryNotLow: false,  // Default
-      requiresStorageNotLow: false,  // Default
-    }, async (taskId:string) => {
-      console.log('[BackgroundFetch] taskId', taskId);
-      // Create an Event record.
-      const event = await Event.create(taskId, false);
-      // Update state.
-      setEvents((prev) => [...prev, event]);
-      // Finish.
-      BackgroundFetch.finish(taskId);
-    }, (taskId:string) => {
-      // Oh No!  Our task took too long to complete and the OS has signalled
-      // that this task must be finished immediately.
-      console.log('[Fetch] TIMEOUT taskId:', taskId);
-      BackgroundFetch.finish(taskId);
-    });
+    const status: number = await BackgroundFetch.configure(
+      {
+        minimumFetchInterval: 15, // <-- minutes (15 is minimum allowed)
+        stopOnTerminate: false,
+        enableHeadless: true,
+        startOnBoot: true,
+        // Android options
+        forceAlarmManager: false, // <-- Set true to bypass JobScheduler.
+        requiredNetworkType: BackgroundFetch.NETWORK_TYPE_NONE, // Default
+        requiresCharging: false, // Default
+        requiresDeviceIdle: false, // Default
+        requiresBatteryNotLow: false, // Default
+        requiresStorageNotLow: false, // Default
+      },
+      async (taskId: string) => {
+        console.log('[BackgroundFetch] taskId', taskId);
+        // Create an Event record.
+        const event = await Event.create(taskId, false);
+        // Update state.
+        setEvents(prev => [...prev, event]);
+        // Finish.
+        BackgroundFetch.finish(taskId);
+      },
+      (taskId: string) => {
+        // Oh No!  Our task took too long to complete and the OS has signalled
+        // that this task must be finished immediately.
+        console.log('[Fetch] TIMEOUT taskId:', taskId);
+        BackgroundFetch.finish(taskId);
+      },
+    );
     setStatus(status);
     setEnabled(true);
-  }
+  };
 
   /// Load persisted events from AsyncStorage.
   ///
   const loadEvents = () => {
-    Event.all().then((data) => {
-      setEvents(data);
-    }).catch((error) => {
-      Alert.alert('Error', 'Failed to load data from AsyncStorage: ' + error);
-    });
-  }
+    Event.all()
+      .then(data => {
+        setEvents(data);
+      })
+      .catch(error => {
+        Alert.alert('Error', 'Failed to load data from AsyncStorage: ' + error);
+      });
+  };
 
   /// Toggle BackgroundFetch ON/OFF
   ///
-  const onClickToggleEnabled = (value:boolean) => {
+  const onClickToggleEnabled = (value: boolean) => {
     setEnabled(value);
 
     if (value) {
@@ -89,12 +93,12 @@ export default function App() {
     } else {
       BackgroundFetch.stop();
     }
-  }
+  };
 
   /// [Status] button handler.
   ///
   const onClickStatus = () => {
-    BackgroundFetch.status().then((status:number) => {
+    BackgroundFetch.status().then((status: number) => {
       let statusConst = '';
       switch (status) {
         case BackgroundFetch.STATUS_AVAILABLE:
@@ -109,7 +113,7 @@ export default function App() {
       }
       Alert.alert('BackgroundFetch.status()', `${statusConst} (${status})`);
     });
-  }
+  };
 
   /// [scheduleTask] button handler.
   /// Schedules a custom-task to fire in 5000ms
@@ -118,43 +122,51 @@ export default function App() {
     BackgroundFetch.scheduleTask({
       taskId: 'com.transistorsoft.customtask',
       delay: 5000,
-      forceAlarmManager: true
-    }).then(() => {
-      Alert.alert('scheduleTask', 'Scheduled task with delay: 5000ms');
-    }).catch((error) => {
-      Alert.alert('scheduleTask ERROR', error);
-    });
-  }
+      forceAlarmManager: true,
+    })
+      .then(() => {
+        Alert.alert('scheduleTask', 'Scheduled task with delay: 5000ms');
+      })
+      .catch(error => {
+        Alert.alert('scheduleTask ERROR', error);
+      });
+  };
 
   /// Clear the Events list.
   ///
   const onClickClear = () => {
     Event.destroyAll();
     setEvents([]);
-  }
+  };
 
   /// Fetch events renderer.
   ///
   const renderEvents = () => {
     if (!events.length) {
       return (
-        <Text style={{padding: 10, fontSize: 16}}>Waiting for BackgroundFetch events...</Text>
+        <Text style={{padding: 10, fontSize: 16}}>
+          Waiting for BackgroundFetch events...
+        </Text>
       );
     }
-    return events.slice().reverse().map(event => (
-      <View key={event.key} style={styles.event}>
-        <View style={{flexDirection: 'row'}}>
-          <Text style={styles.taskId}>{event.taskId}&nbsp;{event.isHeadless ? '[Headless]' : ''}</Text>
+    return events
+      .slice()
+      .reverse()
+      .map(event => (
+        <View key={event.key} style={styles.event}>
+          <View style={{flexDirection: 'row'}}>
+            <Text style={styles.taskId}>
+              {event.taskId}&nbsp;{event.isHeadless ? '[Headless]' : ''}
+            </Text>
+          </View>
+          <Text style={styles.timestamp}>{event.timestamp}</Text>
         </View>
-        <Text style={styles.timestamp}>{event.timestamp}</Text>
-      </View>
-    ))
-  }
+      ));
+  };
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor:Colors.gold}}>
-      <StatusBar barStyle={'light-content'}>
-      </StatusBar>
+    <SafeAreaView style={{flex: 1, backgroundColor: Colors.gold}}>
+      <StatusBar barStyle={'light-content'} />
       <View style={styles.container}>
         <View style={styles.toolbar}>
           <Text style={styles.title}>BGFetch Demo</Text>
@@ -166,10 +178,10 @@ export default function App() {
           {renderEvents()}
         </ScrollView>
         <View style={styles.toolbar}>
-          <Button title={"status: " + status} onPress={onClickStatus} />
+          <Button title={'status: ' + status} onPress={onClickStatus} />
           <Text>&nbsp;</Text>
           <Button title="scheduleTask" onPress={onClickScheduleTask} />
-          <View style={{flex:1}} />
+          <View style={{flex: 1}} />
           <Button title="clear" onPress={onClickClear} />
         </View>
       </View>
@@ -177,38 +189,36 @@ export default function App() {
   );
 }
 
-
-
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'column',
-    flex: 1
+    flex: 1,
   },
   title: {
     fontSize: 24,
     flex: 1,
     fontWeight: 'bold',
-    color: Colors.black
+    color: Colors.black,
   },
   eventList: {
     flex: 1,
-    backgroundColor: Colors.white
+    backgroundColor: Colors.white,
   },
   event: {
     padding: 10,
     borderBottomWidth: 1,
-    borderColor: Colors.lightGrey
+    borderColor: Colors.lightGrey,
   },
   taskId: {
     color: Colors.blue,
     fontSize: 16,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   headless: {
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   timestamp: {
-    color: Colors.black
+    color: Colors.black,
   },
   toolbar: {
     height: 57,
@@ -216,7 +226,6 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 10,
     alignItems: 'center',
-    backgroundColor: Colors.gold
+    backgroundColor: Colors.gold,
   },
 });
-

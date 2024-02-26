@@ -57,5 +57,16 @@ https://github.com/Rapsssito/react-native-background-actions/issues/191
 
 ## :open_file_folder: 動作しない時に参考になりそうな記事、ISSUE
 
+
+https://github.com/transistorsoft/react-native-background-fetch/issues/483
+
+https://github.com/transistorsoft/react-native-background-fetch/issues/474#issuecomment-1810215794
+
+```
+実際には、少なくとも毎日1回はアプリをフォアグラウンドにする必要があります。 そうしないと、アップルはあなたのアプリが使われていないとみなし、イベントの発生を止めてしまう。
+```
+
+
 https://stackoverflow.com/questions/58960411/how-to-get-your-ios-app-to-run-in-the-background-for-longer-than-3-minutes
+
 
